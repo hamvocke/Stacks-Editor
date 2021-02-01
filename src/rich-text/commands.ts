@@ -11,7 +11,13 @@ import {
     Node as ProsemirrorNode,
     ResolvedPos,
 } from "prosemirror-model";
-import { EditorState, Transaction, Plugin, Selection } from "prosemirror-state";
+import {
+    EditorState,
+    Transaction,
+    Plugin,
+    Selection,
+    NodeSelection,
+} from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
@@ -127,6 +133,24 @@ export function moveSelectionBeforeTableCommand(
     dispatch: (tr: Transaction) => void
 ): boolean {
     return exitTableCommand(state, dispatch, true);
+}
+
+export function insertMathCommand(
+    state: EditorState,
+    dispatch: ((tr: Transaction) => void) | undefined
+) {
+    let mathType = schema.nodes.math_inline;
+    let { $from } = state.selection,
+        index = $from.index();
+    if (!$from.parent.canReplaceWith(index, index, mathType)) {
+        return false;
+    }
+    if (dispatch) {
+        let tr = state.tr.replaceSelectionWith(mathType.create({}));
+        tr = tr.setSelection(NodeSelection.create(tr.doc, $from.pos));
+        dispatch(tr);
+    }
+    return true;
 }
 
 function exitTableCommand(
@@ -652,11 +676,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertImage",
                     command: insertImageCommand,
-                    dom: makeMenuIcon(
-                        "Image",
-                        "Image",
-                        "insert-image-btn"
-                    ),
+                    dom: makeMenuIcon("Image", "Image", "insert-image-btn"),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -664,11 +684,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertTable",
                     command: insertTableCommand,
-                    dom: makeMenuIcon(
-                        "Table",
-                        "Table",
-                        "insert-table-btn"
-                    ),
+                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
                     visible: (state: EditorState) => !inTable(state.selection),
                 },
                 options.parserFeatures.tables

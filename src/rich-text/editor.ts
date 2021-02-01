@@ -30,7 +30,7 @@ import {
     defaultParserFeatures,
 } from "../shared/view";
 import { createMenu } from "./commands";
-import { richTextInputRules } from "./inputrules";
+import { mathInputRules, richTextInputRules } from "./inputrules";
 import { richTextKeymap, tableKeymap } from "./key-bindings";
 import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
@@ -40,6 +40,8 @@ import { TagLink } from "./node-views/tag-link";
 import { codePasteHandler } from "./plugins/code-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
 import { linkTooltipPlugin } from "./plugins/link-tooltip";
+import { mathPlugin } from "./plugins/math-plugin";
+import mathSelectPlugin from "./plugins/math-select";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 
@@ -87,7 +89,10 @@ export class RichTextEditor extends BaseView {
                         richTextKeymap,
                         keymap(baseKeymap),
                         createMenu(this.options),
+                        mathInputRules,
                         richTextInputRules,
+                        mathPlugin,
+                        mathSelectPlugin,
                         linkPreviewPlugin(this.options.linkPreviewProviders),
                         CodeBlockHighlightPlugin(
                             this.options.codeblockOverrideLanguage

@@ -310,6 +310,41 @@ const tagLinkNodeSpec: NodeSpec = {
     },
 };
 
+const mathInlineSpec: NodeSpec = {
+    group: "inline math",
+    content: "text*",
+    inline: true,
+    atom: true,
+    toDOM: () => ["math-inline", { class: "math-node" }, 0],
+    parseDOM: [
+        {
+            tag: "math-inline",
+        },
+    ],
+};
+
+const mathBlockSpec: NodeSpec = {
+    group: "block math",
+    content: "text*",
+    atom: true,
+    code: true,
+    toDOM: () => ["math-display", { class: "math-node" }, 0],
+    parseDOM: [
+        {
+            tag: "math-display",
+        },
+    ],
+};
+
+const mathSelectMarkSpec: MarkSpec = {
+    math_select: {
+        toDOM() {
+            return ["math-select", 0];
+        },
+        parseDOM: [{ tag: "math-select" }],
+    },
+};
+
 const nodes = defaultNodes
     .addBefore("image", "pre", genHtmlBlockNodeSpec("pre"))
     .addBefore("image", "html_block", htmlBlockSpec)
@@ -324,6 +359,8 @@ const nodes = defaultNodes
     .addBefore("image", "table_header", tableHeaderNodeSpec)
     .addBefore("image", "tagLink", tagLinkNodeSpec)
     .addBefore("blockquote", "spoiler", spoilerNodeSpec)
+    .addBefore("blockquote", "math_inline", mathInlineSpec)
+    .addBefore("blockquote", "math_display", mathBlockSpec)
     .update("image", extendedImageSpec)
     .update("code_block", extendedCodeblockSpec);
 
@@ -362,6 +399,7 @@ const marks = defaultMarks
     .addBefore("strong", "kbd", genHtmlInlineMarkSpec("kbd"))
     .addBefore("strong", "sup", genHtmlInlineMarkSpec("sup"))
     .addBefore("strong", "sub", genHtmlInlineMarkSpec("sub"))
+    .addBefore("strong", "math_select", mathSelectMarkSpec)
     .update("link", extendedLinkMark);
 
 // for *every* mark, add in support for the `markup` attribute

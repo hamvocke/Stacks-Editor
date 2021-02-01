@@ -1,4 +1,16 @@
-import { toggleMark, wrapIn, setBlockType } from "prosemirror-commands";
+import {
+    toggleMark,
+    wrapIn,
+    setBlockType,
+    newlineInCode,
+    createParagraphNear,
+    splitBlock,
+    deleteSelection,
+    chainCommands,
+    joinBackward,
+    selectNodeBackward,
+    liftEmptyBlock,
+} from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
@@ -17,17 +29,35 @@ import {
     moveToNextCellCommand,
     moveToPreviousCellCommand,
     moveSelectionAfterTableCommand,
+    insertMathCommand,
 } from "./commands";
+import { mathBackspace } from "./plugins/math-backspace";
 
 export const richTextKeymap = keymap({
+    "Mod-Space": insertMathCommand,
     "Mod-z": undo,
     "Mod-y": redo,
     "Mod-Shift-z": redo,
-    "Backspace": undoInputRule,
-    "Enter": splitListItem(schema.nodes.list_item),
+    // "Enter": splitListItem(schema.nodes.list_item),
+    "Enter": chainCommands(
+        newlineInCode,
+        createParagraphNear,
+        liftEmptyBlock,
+        splitBlock
+    ),
+
     "Tab": sinkListItem(schema.nodes.list_item),
     "Shift-Tab": liftListItem(schema.nodes.list_item),
-    "Mod-Enter": exitBlockCommand,
+    // "Mod-Enter": exitBlockCommand,
+    "Mod-Enter": chainCommands(newlineInCode, createParagraphNear, splitBlock),
+    "Backspace": chainCommands(
+        deleteSelection,
+        mathBackspace,
+        joinBackward,
+        selectNodeBackward,
+        undoInputRule
+    ),
+
     "Shift-Enter": exitBlockCommand,
     "Mod-b": toggleMark(schema.marks.strong),
     "Mod-i": toggleMark(schema.marks.em),
